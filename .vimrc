@@ -20,38 +20,29 @@ set encoding=utf-8
 set fileencodings=utf-8,gb18030,gbk
 set fileencoding=utf-8
 
+"lsp补全python
+call plug#begin()
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+call plug#end()
+
+imap <c-space> <Plug>(asyncomplete_force_refresh)
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <cr> pumvisible() ? "\<C-y>\<cr>" : "\<cr>"
+autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+
+if executable('pyls')
+    au User lsp_setup call lsp#register_server({
+                \ 'name': 'pyls',
+                \ 'cmd': {server_info->['pyls']},
+                \ 'allowlist': ['python'],
+                \ })
+endif
 
 
-
-
-"Vundle
-set nocompatible
-filetype indent on
-
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'DfrankUtil'
-Plugin 'vimprj'
-Plugin 'indexer.tar.gz'
-call vundle#end()
-filetype plugin indent on
-
-
-
-
-"YCM
-let mapleader = ','
-let g:ycm_confirm_extra_conf=0
-let g:ycm_complete_in_comments=1
-let g:ycm_min_num_of_chars_for_completion=1
-let g:ycm_collect_identifiers_from_tag_files=1
-let g:ycm_global_ycm_extra_conf='~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
-nnoremap <leader>] :YcmCompleter GoToDefinitionElseDeclaration<CR>
-
-
-
+"快捷执行F6
 map<F6> :call CompileRunGcc()<CR>
 func! CompileRunGcc()
     exec "w"
@@ -81,31 +72,4 @@ inoremap } <c-r>=CloseBracket()<CR>
 inoremap " <c-r>=QuoteDelim('"')<CR>
 inoremap ' <c-r>=QuoteDelim("'")<CR>
 
-function ClosePair(char)
- if getline('.')[col('.') - 1] == a:char
- return "\<Right>"
- else
- return a:char
- endif
-endf
-
-function CloseBracket()
- if match(getline(line('.') + 1), '\s*}') < 0
- return "\<CR>}"
- else
- return "\<Esc>j0f}a"
- endif
-endf
-
-function QuoteDelim(char)
- let line = getline('.')
- let col = col('.')
- if line[col - 2] == "\\"
- return a:char
- elseif line[col - 1] == a:char
- return "\<Right>"
- else
- return a:char.a:char."\<Esc>i"
- endif
-endf
 
